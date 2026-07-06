@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>2026 Continuous Releases — Year to Date</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0f1117;
+    --bg-card:     #1a1d27;
+    --bg-stripe:   #1e2130;
+    --border:      #2a2d3a;
+    --text-primary:   #e8eaf0;
+    --text-secondary: #8b8fa8;
+    --text-tertiary:  #555870;
+    --text-link:      #6b9eff;
+    --accent-blue:    #3b5bdb;
+    --pill-neutral-bg: #2a2d3a;
+    --pill-neutral-fg: #8b8fa8;
+    --pill-info-bg:    #1a2a4a;
+    --pill-info-fg:    #6b9eff;
+    --pill-warn-bg:    #2a2010;
+    --pill-warn-fg:    #f0a843;
+    --pill-success-bg: #0f2a1a;
+    --pill-success-fg: #4ade80;
+    --pill-added-bg:   #1a2a1a;
+    --pill-added-fg:   #86efac;
+    font-size: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    padding: 32px 24px 64px;
+  }
+
+  .page { max-width: 1200px; margin: 0 auto; }
+
+  /* ── Typography ──────────────────────────────────────── */
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  h2 { font-size: 16px; font-weight: 600; }
+  h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+  .subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+
+  /* ── Layout helpers ──────────────────────────────────── */
+  .stack { display: flex; flex-direction: column; }
+  .stack-4  { gap: 4px;  }
+  .stack-6  { gap: 6px;  }
+  .stack-12 { gap: 12px; }
+  .stack-16 { gap: 16px; }
+  .stack-24 { gap: 24px; }
+
+  .row { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .row-gap-8  { gap: 8px;  }
+  .row-gap-12 { gap: 12px; }
+  .row-gap-16 { gap: 16px; }
+  .spacer { flex: 1; }
+
+  .grid-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+
+  /* ── Cards ───────────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  /* ── Stats ───────────────────────────────────────────── */
+  .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 700; line-height: 1.1; }
+
+  /* ── Pills ───────────────────────────────────────────── */
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1.6;
+  }
+  .pill-neutral { background: var(--pill-neutral-bg); color: var(--pill-neutral-fg); }
+  .pill-info    { background: var(--pill-info-bg);    color: var(--pill-info-fg);    }
+  .pill-warning { background: var(--pill-warn-bg);    color: var(--pill-warn-fg);    }
+  .pill-success { background: var(--pill-success-bg); color: var(--pill-success-fg); }
+  .pill-added   { background: var(--pill-added-bg);   color: var(--pill-added-fg);   }
+
+  /* ── Filters ─────────────────────────────────────────── */
+  .filter-label { font-size: 12px; color: var(--text-secondary); }
+  select {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 5px 10px;
+    cursor: pointer;
+    outline: none;
+  }
+  select:focus { border-color: var(--accent-blue); }
+  .filter-count { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── Table ───────────────────────────────────────────── */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  td { padding: 8px 12px; vertical-align: middle; }
+  tbody tr:nth-child(even) { background: var(--bg-stripe); }
+  tbody tr:hover { background: #1e2230; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+
+  .key-link {
+    color: var(--text-link);
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .key-link:hover { text-decoration: underline; }
+  .cell-secondary { color: var(--text-secondary); }
+  .cell-title { max-width: 320px; }
+
+  .empty-row td {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-tertiary);
+  }
+
+  /* ── Feature type section header rows ───────────────── */
+  tr.section-header td {
+    padding: 6px 12px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Note ────────────────────────────────────────────── */
+  .note {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+
+  @media (max-width: 700px) {
+    .grid-6 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="page stack stack-24">
+
+  <!-- Header -->
+  <div class="stack stack-4">
+    <h1>2026 Continuous Releases — Year to Date</h1>
+    <p class="subtitle">Tickets with "Add to Release Notes = Yes – Continuous" · Releases C2–C6 (Mar 25 – Jun 24, 2026) · C1 had no qualifying tickets</p>
+  </div>
+
+  <!-- Stats row 1: by release -->
+  <div class="grid-6" id="release-stats"></div>
+
+  <!-- Stats row 2: by feature type -->
+  <div class="stack stack-6">
+    <div class="row row-gap-8">
+      <h3>By feature type</h3>
+      <span class="note">approx. — matched against feature catalog, not a Jira field</span>
+    </div>
+    <div class="grid-4" id="ft-stats"></div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Filters -->
+  <div class="row row-gap-16">
+    <strong style="font-size:13px">Filter:</strong>
+    <div class="row row-gap-8">
+      <span class="filter-label">Release</span>
+      <select id="filter-release"><option value="All">All</option></select>
+    </div>
+    <div class="row row-gap-8">
+      <span class="filter-label">Ticket type</span>
+      <select id="filter-type"><option value="All">All</option></select>
+    </div>
+    <div class="row row-gap-8">
+      <span class="filter-label">Feature type</span>
+      <select id="filter-ft">
+        <option value="All">All</option>
+        <option value="Premium">Premium</option>
+        <option value="AddOn">AddOn</option>
+        <option value="Value-Added">Value-Added</option>
+        <option value="Core">Core</option>
+      </select>
+    </div>
+    <div class="spacer"></div>
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <!-- Table -->
+  <div>
+    <h2 style="margin-bottom:12px">Release Notes Tickets</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Release</th>
+            <th>Ticket Type</th>
+            <th>Title</th>
+            <th>Feature Type</th>
+            <th>Domain</th>
+            <th>Market</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const JIRA = "https://alayacare.atlassian.net/browse/";
+
+const TICKETS = [
+  // C2 (04/15)
+  { key:"CARE-297",   type:"Story",        ft:"Core",        title:"Remove Level 1 Filter in Forms on Overview",                          domain:"Connective Tissue",       market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"CFG-8728",   type:"Story",        ft:"Core",        title:"[Tasks V2] Display additional employee/client info in task",          domain:"Unmapped",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"CFG-8878",   type:"Story",        ft:"Core",        title:"New HTML Data Migration template guide downloadable from UI",         domain:"Unmapped",                market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"CFG-8884",   type:"Story",        ft:"Core",        title:"Tasks V2 – Bulk Reassignment",                                       domain:"Unmapped",                market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"EI-9984",    type:"Story",        ft:"Core",        title:"Password change notification via Email",                              domain:"Unmapped",                market:"",               status:"Closed",             release:"C2 (04/15)" },
+  { key:"EI-10258",   type:"Story",        ft:"Core",        title:"Email change notification via Email",                                 domain:"Unmapped",                market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"LAB-6646",   type:"Release Plan", ft:"Premium",     title:"Visit Optimizer: UX and Configuration Improvements",                 domain:"Unmapped",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"LAB-6669",   type:"Release Plan", ft:"Premium",     title:"Notable: Editable Flags and Review Workflow",                        domain:"Unmapped",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"LAB-7237",   type:"Release Plan", ft:"Premium",     title:"AI Form Assistant: Multiple languages support",                      domain:"Unmapped",                market:"",               status:"General Availability",release:"C2 (04/15)" },
+  { key:"LAB-7240",   type:"Release Plan", ft:"Premium",     title:"New Employees skills available in Layla Secure Messaging",           domain:"Unmapped",                market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"PAYR-6861",  type:"Story",        ft:"Core",        title:"Hyperlink to google the mileage reimbursement amount",               domain:"Unmapped",                market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"ADM-3150",   type:"Story",        ft:"Core",        title:"Update Attachments Grid – Add Ellipsis Menu, Relabel Upload",        domain:"Admission & Marketplace", market:"",               status:"Done",               release:"C2 (04/15)" },
+  { key:"AM-4805",    type:"Release Plan", ft:"Premium",     title:"Marketplace Hub - Messaging",                                        domain:"Admission & Marketplace", market:"INFUSION GLOBAL",status:"Open",               release:"C2 (04/15)" },
+  { key:"AM-4942",    type:"Release Plan", ft:"Premium",     title:"Marketplace Demand Data in DE",                                      domain:"Admission & Marketplace", market:"INFUSION GLOBAL",status:"Open",               release:"C2 (04/15)" },
+  { key:"ADM-3104",   type:"Release Plan", ft:"Core",        title:"Limit Batch Chart Print to Applicable Forms",                        domain:"Care Planning & Delivery",market:"ALL",            status:"Planning",            release:"C2 (04/15)" },
+  { key:"LAB-6671",   type:"Release Plan", ft:"Premium",     title:"[Price Increase] Forms Summary Button",                              domain:"Data and Intelligence",   market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"LAB-6673",   type:"Release Plan", ft:"Premium",     title:"[Price Increase] Employee Summary Button",                           domain:"Data and Intelligence",   market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"SCHED-5823", type:"Release Plan", ft:"Value-Added", title:"Client tags filter on Attendance Dashboard",                         domain:"Scheduling",              market:"ALL",            status:"Early Access",        release:"C2 (04/15)" },
+  { key:"AFL-855",    type:"Story",        ft:"Core",        title:"Tasks UI Improvements for Agent Integration",                        domain:"Platform",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"CFG-9311",   type:"Story",        ft:"Core",        title:"Display report progress percentage in audit reports",                 domain:"Platform",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  { key:"EI-10343",   type:"Release Plan", ft:"Premium",     title:"Require a click to display HERE maps dashboard plugin",              domain:"Platform",                market:"ALL",            status:"Done",               release:"C2 (04/15)" },
+  // C3 (04/29)
+  { key:"BO-36802",   type:"Release Plan", ft:"Core",        title:"837I / UB-04 – Configure Admission Date & Discharge Date",          domain:"Unmapped",                market:"",               status:"Open",               release:"C3 (04/29)" },
+  { key:"CFG-9252",   type:"Story",        ft:"Core",        title:"Rename 'Close Tasks' ACL to 'Set Task to Not Doing'",               domain:"Platform",                market:"",               status:"Done",               release:"C3 (04/29)" },
+  { key:"CFG-9328",   type:"Bug",          ft:"Core",        title:"Align 'My Tasks Due Today' and 'Tasks Due Today' KPI tiles",        domain:"Unmapped",                market:"",               status:"Done",               release:"C3 (04/29)" },
+  { key:"SEV-8482",   type:"Escalation",   ft:"Core",        title:"Calculated premiums not associated to paycode put payroll at risk", domain:"Workforce Management",    market:"",               status:"Closed",             release:"C3 (04/29)" },
+  // C4 (05/13)
+  { key:"ADM-2869",   type:"Story",        ft:"Core",        title:"Field Portal user can add/update availability",                     domain:"Unmapped",                market:"",               status:"Done",               release:"C4 (05/13)" },
+  { key:"ADM-2940",   type:"Release Plan", ft:"Core",        title:"Intake Wizard: Map LHIN frequencies to auths",                     domain:"Admission & Marketplace", market:"PROVIDER CANADA",status:"Open",               release:"C4 (05/13)" },
+  { key:"ADM-3246",   type:"Release Plan", ft:"Core",        title:"Support Task creation in intake wizard",                            domain:"Admission & Marketplace", market:"ALL",            status:"Open",               release:"C4 (05/13)" },
+  { key:"AM-4966",    type:"Release Plan", ft:"Premium",     title:"Marketplace Hub - Offers",                                          domain:"Unmapped",                market:"",               status:"Open",               release:"C4 (05/13)" },
+  { key:"AM-5042",    type:"Release Plan", ft:"Premium",     title:"Marketplace Hub - Messaging - Support Group Filters",               domain:"Unmapped",                market:"INFUSION GLOBAL",status:"Open",               release:"C4 (05/13)" },
+  { key:"CARE-402",   type:"Story",        ft:"Core",        title:"[Client Overview] Default in May",                                  domain:"Connective Tissue",       market:"",               status:"Done",               release:"C4 (05/13)" },
+  { key:"CLIN-17807", type:"Release Plan", ft:"Core",        title:"Self Service - Update Vitals Measures (Metric/Imperial)",           domain:"Care Planning & Delivery",market:"ALL",            status:"Done",               release:"C4 (05/13)" },
+  { key:"CLIN-18452", type:"Release Plan", ft:"Core",        title:"New Report - Visit Completion Report",                              domain:"Unmapped",                market:"HOMECARE USA",   status:"Closed",             release:"C4 (05/13)" },
+  { key:"EI-9934",    type:"Release Plan", ft:"Core",        title:"Notification safeguards on non-prod environments",                  domain:"Platform",                market:"ALL",            status:"Open",               release:"C4 (05/13)" },
+  { key:"LAB-7467",   type:"Release Plan", ft:"Premium",     title:"Visit Optimizer: UX and Config Improvements (GA)",                  domain:"Data and Intelligence",   market:"ALL",            status:"General Availability",release:"C4 (05/13)" },
+  { key:"MOB-11144",  type:"Release Plan", ft:"Core",        title:"Form draft's linkage to visit",                                    domain:"Careworker App",          market:"ALL",            status:"Open",               release:"C4 (05/13)" },
+  { key:"MOBD-4190",  type:"Release Plan", ft:"Core",        title:"Post Go Live T1",                                                   domain:"Careworker App",          market:"",               status:"Open",               release:"C4 (05/13)" },
+  { key:"SCHED-2030", type:"Story",        ft:"Core",        title:"All Day/Past Unavailability does not vacate ALL visits",            domain:"Scheduling",              market:"ALL",            status:"Done",               release:"C4 (05/13)" },
+  { key:"SCHED-5269", type:"Release Plan", ft:"Core",        title:"Update existing visits when service visit type updates",           domain:"Scheduling",              market:"ALL",            status:"Done",               release:"C4 (05/13)" },
+  { key:"SPX-9171",   type:"Story",        ft:"Core",        title:"Pre-compute AC_ID",                                                 domain:"Data and Intelligence",   market:"",               status:"Done",               release:"C4 (05/13)" },
+  // C5 (06/03)
+  { key:"AM-5026",    type:"Story",        ft:"Premium",     title:"Marketplace: decouple form 'Approve Automatically'",               domain:"Unmapped",                market:"",               status:"On Prod",             release:"C5 (06/03)" },
+  { key:"AM-5045",    type:"Release Plan", ft:"Premium",     title:"Marketplace - Support Progress Notes in Forms",                    domain:"Unmapped",                market:"",               status:"Open",               release:"C5 (06/03)" },
+  { key:"PAYR-7203",  type:"Release Plan", ft:"Core",        title:"Employee + Payroll Audit Trail Additions",                         domain:"Unmapped",                market:"ALL",            status:"Open",               release:"C5 (06/03)" },
+  { key:"SPX-8818",   type:"Story",        ft:"AddOn",       title:"Employee Explore – Add client-specific pay rates",                 domain:"DE",                      market:"",               status:"Done",               release:"C5 (06/03)" },
+  { key:"SPX-9297",   type:"Story",        ft:"Core",        title:"Clean Up Old Group Association Models and Fields",                 domain:"DE",                      market:"",               status:"Done",               release:"C5 (06/03)" },
+  // C6 (06/24)
+  { key:"LAB-7674",   type:"Release Plan", ft:"Premium",     title:"Include Missed Visits in Visit Optimizer via Configuration",       domain:"Data and Intelligence",   market:"ALL",            status:"Early Access",        release:"C6 (06/24)" },
+  { key:"SPX-6663",   type:"Task",         ft:"AddOn",       title:"Add Group Associations to Snowflake and DE",                      domain:"Data and Intelligence",   market:"PROVIDER CANADA",status:"Done",               release:"C6 (06/24)" },
+  { key:"SPX-6828",   type:"Task",         ft:"AddOn",       title:"DE2 | Add Payor Program Fields",                                  domain:"Data and Intelligence",   market:"ALL",            status:"Done",               release:"C6 (06/24)" },
+  { key:"SPX-9266",   type:"Story",        ft:"AddOn",       title:"Add infusion rate tables to data sharing",                        domain:"Data and Intelligence",   market:"",               status:"Done",               release:"C6 (06/24)" },
+  { key:"SPX-9318",   type:"Story",        ft:"Core",        title:"FIX: Remove try_to_number in dim_employee_settings",              domain:"DE",                      market:"",               status:"Done",               release:"C6 (06/24)" },
+];
+
+const FT_ORDER = { Premium: 0, AddOn: 1, "Value-Added": 2, Core: 3 };
+const RELEASE_COUNTS = [
+  { label: "C2 (04/15)", count: 21 },
+  { label: "C3 (04/29)", count: 4 },
+  { label: "C4 (05/13)", count: 15 },
+  { label: "C5 (06/03)", count: 5 },
+  { label: "C6 (06/24)", count: 5 },
+];
+const FEATURE_TYPES = ["Premium", "AddOn", "Value-Added", "Core"];
+
+// ── Pill helpers ──────────────────────────────────────────────────────────────
+function ftPillClass(ft) {
+  return ft === "Premium" ? "pill-info" : ft === "AddOn" ? "pill-warning" : ft === "Value-Added" ? "pill-added" : "pill-neutral";
+}
+function statusPillClass(s) {
+  const sl = s.toLowerCase();
+  if (sl === "done" || sl === "closed" || sl === "on prod") return "pill-success";
+  if (sl === "early access" || sl === "general availability") return "pill-warning";
+  return "pill-neutral";
+}
+function typePillClass(t) {
+  if (t === "Release Plan") return "pill-info";
+  if (t === "Bug" || t === "Escalation") return "pill-warning";
+  return "pill-neutral";
+}
+function pill(text, cls) {
+  return `<span class="pill ${cls}">${esc(text)}</span>`;
+}
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ── Build stat cards ──────────────────────────────────────────────────────────
+function statCard(label, value) {
+  return `<div class="card"><div class="stat-label">${esc(label)}</div><div class="stat-value">${esc(String(value))}</div></div>`;
+}
+
+document.getElementById("release-stats").innerHTML =
+  statCard("Total tickets", TICKETS.length) +
+  RELEASE_COUNTS.map(r => statCard(r.label, r.count)).join("");
+
+const ftCounts = { Premium: 0, AddOn: 0, "Value-Added": 0, Core: 0 };
+for (const t of TICKETS) ftCounts[t.ft]++;
+document.getElementById("ft-stats").innerHTML =
+  FEATURE_TYPES.map(ft => statCard(ft, ftCounts[ft])).join("");
+
+// ── Populate filter dropdowns ─────────────────────────────────────────────────
+const releases = [...new Set(TICKETS.map(t => t.release))].sort();
+const types    = [...new Set(TICKETS.map(t => t.type))].sort();
+
+const selRelease = document.getElementById("filter-release");
+const selType    = document.getElementById("filter-type");
+const selFt      = document.getElementById("filter-ft");
+
+releases.forEach(r => selRelease.insertAdjacentHTML("beforeend", `<option>${esc(r)}</option>`));
+types.forEach(t => selType.insertAdjacentHTML("beforeend", `<option>${esc(t)}</option>`));
+
+// ── Render table ──────────────────────────────────────────────────────────────
+function render() {
+  const rel = selRelease.value;
+  const typ = selType.value;
+  const ft  = selFt.value;
+
+  const filtered = TICKETS.filter(t =>
+    (rel === "All" || t.release === rel) &&
+    (typ === "All" || t.type === typ) &&
+    (ft  === "All" || t.ft === ft)
+  );
+
+  const sorted = [...filtered].sort((a, b) => {
+    const d = FT_ORDER[a.ft] - FT_ORDER[b.ft];
+    return d !== 0 ? d : a.key.localeCompare(b.key);
+  });
+
+  const done = filtered.filter(t => ["Done","Closed","On Prod"].includes(t.status)).length;
+  document.getElementById("filter-count").textContent =
+    `${filtered.length} ticket${filtered.length !== 1 ? "s" : ""} · ${done} done/closed`;
+
+  const tbody = document.getElementById("table-body");
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No tickets match the selected filters.</td></tr>`;
+    return;
+  }
+
+  let html = "";
+  let lastFt = null;
+
+  for (const t of sorted) {
+    if (t.ft !== lastFt) {
+      html += `<tr class="section-header"><td colspan="8">${esc(t.ft)}</td></tr>`;
+      lastFt = t.ft;
+    }
+    html += `<tr>
+      <td><a class="key-link" href="${JIRA}${esc(t.key)}" target="_blank" rel="noreferrer">${esc(t.key)}</a></td>
+      <td class="cell-secondary">${esc(t.release)}</td>
+      <td>${pill(t.type, typePillClass(t.type))}</td>
+      <td class="cell-title">${esc(t.title)}</td>
+      <td>${pill(t.ft, ftPillClass(t.ft))}</td>
+      <td class="cell-secondary">${esc(t.domain || "—")}</td>
+      <td class="cell-secondary">${esc(t.market || "—")}</td>
+      <td>${pill(t.status, statusPillClass(t.status))}</td>
+    </tr>`;
+  }
+
+  tbody.innerHTML = html;
+}
+
+selRelease.addEventListener("change", render);
+selType.addEventListener("change", render);
+selFt.addEventListener("change", render);
+
+render();
+</script>
+</body>
+</html>
