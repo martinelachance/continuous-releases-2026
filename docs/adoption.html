@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>C1–C6 Feature Adoption · 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #0f1117;
+    --bg-card:     #1a1d27;
+    --bg-stripe:   #1e2130;
+    --border:      #2a2d3a;
+    --text-primary:   #e8eaf0;
+    --text-secondary: #8b8fa8;
+    --text-tertiary:  #555870;
+    --text-link:      #6b9eff;
+    --accent-blue:    #3b5bdb;
+    --pill-neutral-bg: #2a2d3a;
+    --pill-neutral-fg: #8b8fa8;
+    --pill-info-bg:    #1a2a4a;
+    --pill-info-fg:    #6b9eff;
+    --pill-warn-bg:    #2a2010;
+    --pill-warn-fg:    #f0a843;
+    --pill-success-bg: #0f2a1a;
+    --pill-success-fg: #4ade80;
+    --pill-danger-bg:  #2a0f0f;
+    --pill-danger-fg:  #f87171;
+    --pill-added-bg:   #1a2a1a;
+    --pill-added-fg:   #86efac;
+    --clr-green:   #4ade80;
+    --clr-orange:  #f0a843;
+    --clr-red:     #f87171;
+    font-size: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    padding: 32px 24px 64px;
+  }
+
+  .page { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  h2 { font-size: 16px; font-weight: 600; }
+  h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); }
+  .subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+
+  .stack { display: flex; flex-direction: column; }
+  .gap-4  { gap: 4px; }
+  .gap-8  { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+
+  .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .card-body { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+  .card-body strong { color: var(--text-primary); }
+
+  .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 700; line-height: 1.1; }
+  .stat-value.success { color: var(--clr-green); }
+  .stat-value.danger  { color: var(--clr-red); }
+
+  .pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .pill-neutral { background: var(--pill-neutral-bg); color: var(--pill-neutral-fg); }
+  .pill-info    { background: var(--pill-info-bg);    color: var(--pill-info-fg);    }
+  .pill-warning { background: var(--pill-warn-bg);    color: var(--pill-warn-fg);    }
+  .pill-success { background: var(--pill-success-bg); color: var(--pill-success-fg); }
+  .pill-danger  { background: var(--pill-danger-bg);  color: var(--pill-danger-fg);  }
+  .pill-addon   { background: #2a1a2a; color: #c084fc; }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    border-left: 3px solid;
+  }
+  .callout-title { font-weight: 600; margin-bottom: 4px; }
+  .callout-note  { background: #141828; border-color: var(--accent-blue); color: var(--text-secondary); }
+  .callout-note  .callout-title { color: var(--text-link); }
+  .callout-danger  { background: #1a0f0f; border-color: #f87171; }
+  .callout-danger  .callout-title { color: var(--clr-red); }
+  .callout-warning { background: #1a150a; border-color: var(--clr-orange); }
+  .callout-warning .callout-title { color: var(--clr-orange); }
+
+  nav { font-size: 13px; color: var(--text-secondary); }
+  nav a { color: var(--text-link); text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+
+  .table-wrap { overflow-x: auto; margin-top: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.4px;
+    color: var(--text-tertiary);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th.right { text-align: right; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--bg-stripe); }
+  tbody tr.row-danger  { background: #1a0d0d; }
+  tbody tr.row-warning { background: #181209; }
+  tbody td { padding: 9px 12px; vertical-align: middle; }
+  tbody td.right { text-align: right; }
+  td.cell-secondary { color: var(--text-secondary); font-size: 12px; }
+  td.cell-note { color: var(--text-secondary); font-size: 12px; max-width: 260px; }
+  .section-header td {
+    padding: 6px 12px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pendo-signal { font-size: 12px; }
+
+  .cc-pct { font-size: 13px; font-weight: 500; }
+  .cc-pct.high   { color: var(--clr-green); }
+  .cc-pct.low    { color: var(--clr-orange); }
+  .cc-pct.none   { color: var(--text-tertiary); }
+
+  .mini-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+  .mini-card.spike { border-color: var(--clr-orange); background: #1a150a; }
+  .mini-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .mini-value { font-size: 18px; font-weight: 700; }
+  .mini-sub   { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-6 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-6 { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav>← <a href="index.html">Release Notes (C1–C6)</a></nav>
+
+  <div class="stack gap-4">
+    <h1>C1–C6 Feature Adoption</h1>
+    <p class="subtitle">Mar 25 – Jul 5, 2026 · Pendo in-app usage (web) · Zendesk support tickets · Control Center activation · 12 features tracked</p>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="grid-4">
+    <div class="card">
+      <div class="stat-label">Active or growing</div>
+      <div class="stat-value success">7</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Moderate or early</div>
+      <div class="stat-value">3</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">No Pendo activity</div>
+      <div class="stat-value danger">1</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Zendesk tickets (measured)</div>
+      <div class="stat-value">281</div>
+    </div>
+  </div>
+
+  <!-- Pendo coverage note -->
+  <div class="callout callout-note">
+    <div class="callout-title">Data coverage</div>
+    Pendo events and account counts are sourced from <strong>product area activity</strong> in the AlayaCare web app
+    (Marketplace, Data Intelligence, RCM, Admission &amp; Care Delivery, Workforce Management) —
+    not individual feature-level tags. MOB tickets (care worker app) live in separate Pendo apps
+    (Caregiver iOS/Android) and were <strong>not queried</strong>.
+    CC Activated = % of eligible tenants with the feature on in Control Center as of Jul 6, 2026.
+  </div>
+
+  <!-- Priority callouts -->
+  <div class="callout callout-danger">
+    <div class="callout-title">Data Exploration 2 — blocked, not dormant</div>
+    167 Zendesk tickets about DE 2.0 unavailability, slowness, and incorrect calculations — yet Pendo shows zero events.
+    Only 21% of eligible tenants have even activated it (236 of 1,107). Customers are trying to reach it but can't reliably access it.
+    This needs an engineering triage, not a marketing campaign.
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">Visit Optimizer — C4 quality spike (May 13 – Jun 2)</div>
+    21 of 46 total Zendesk tickets arrived during the C4 window — wrong discipline assignments, inaccurate travel time and data.
+    Volume dropped to 8 in C5 and 1 in C6, suggesting a fix was applied. Confirm with the LAB team whether a hotfix was shipped.
+  </div>
+
+  <div class="callout callout-warning">
+    <div class="callout-title">Field User Portal — silent regression</div>
+    Zero Zendesk tickets, but Pendo shows 82K "return to legacy" clicks vs. 9K "try enhanced" — a 9:1 reverse ratio.
+    73% of eligible tenants have it activated; most users are silently opting back out.
+    Worth a targeted survey or in-app guide to understand the friction.
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Main table -->
+  <div class="stack gap-8">
+    <h2>Feature adoption by signal source</h2>
+    <p class="subtitle">
+      CC Activated: green ≥ 60% · orange ≤ 20% · dash = ungated Core feature.
+      ZD Tickets covers the full Mar 25 – Jul 5 window.
+    </p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Area</th>
+          <th>Tier</th>
+          <th class="right">Events (Pendo)</th>
+          <th class="right">Accounts</th>
+          <th>Pendo</th>
+          <th class="right">CC Activated</th>
+          <th class="right">ZD Tickets</th>
+          <th>Zendesk context</th>
+        </tr>
+      </thead>
+      <tbody id="feature-tbody"></tbody>
+    </table>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Visit Optimizer timeline -->
+  <h2>Visit Optimizer — Zendesk tickets by release window</h2>
+  <div class="grid-6">
+    <div class="mini-card">
+      <div class="mini-label">Pre-C2</div>
+      <div class="mini-value">7</div>
+      <div class="mini-sub">Mar 25 – Apr 14</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">C2</div>
+      <div class="mini-value">1</div>
+      <div class="mini-sub">Apr 15 – 28</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">C3</div>
+      <div class="mini-value">4</div>
+      <div class="mini-sub">Apr 29 – May 12</div>
+    </div>
+    <div class="mini-card spike">
+      <div class="mini-label">C4 ⚠</div>
+      <div class="mini-value" style="color:var(--clr-orange)">21</div>
+      <div class="mini-sub">May 13 – Jun 2</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">C5</div>
+      <div class="mini-value">8</div>
+      <div class="mini-sub">Jun 3 – 23</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-label">C6</div>
+      <div class="mini-value">1</div>
+      <div class="mini-sub">Jun 24 – Jul 5</div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Activation × Usage -->
+  <h2>Activation × Usage — what the Control Center tells us</h2>
+  <p class="subtitle" style="margin-top:4px">
+    High activation + low Pendo = discoverability gap. Low activation = onboarding opportunity. High ZD + no Pendo = quality blocker.
+  </p>
+
+  <div class="grid-2" style="margin-top:4px">
+    <div class="card stack gap-12">
+      <div class="card-header">High activation · low Pendo — discoverability gap</div>
+      <div class="card-body">
+        <strong>AI Voice-to-Form (Dictate)</strong> — 100% activated (all 16 eligible tenants on),
+        but only 42 Pendo accounts and 1,634 events in 92 days.
+        Every eligible customer unlocked it; almost none of their users are finding it.
+        Needs in-app discovery or onboarding guidance.
+      </div>
+      <div class="card-body">
+        <strong>AI Smart Summaries</strong> — 95% activated, Moderate Pendo signal.
+        High reach but usage is purposeful rather than frequent — may be working as designed.
+      </div>
+      <div class="card-body">
+        <strong>Field User Portal</strong> — 73% activated, yet 9:1 reverse-click ratio.
+        Three-quarters of eligible tenants turned it on; most users are opting back to legacy.
+      </div>
+    </div>
+
+    <div class="card stack gap-12">
+      <div class="card-header">Low activation · urgent action needed</div>
+      <div class="card-body">
+        <strong>Marketplace</strong> — only 11% of eligible tenants activated (11/99).
+        The Strong Pendo signal is coming from a very small base.
+        89 eligible tenants haven't switched it on — significant untapped growth.
+      </div>
+      <div class="card-body">
+        <strong>Data Exploration 2</strong> — 21% activated AND 167 Zendesk tickets AND zero Pendo events.
+        Only 236 of 1,107 eligible tenants have it on, and even those can't use it reliably.
+        Quality fix must precede any activation push.
+      </div>
+      <div class="card-body">
+        <strong>Notable</strong> — 49% activated (211/430). Half of eligible customers haven't enabled it.
+        Strong Pendo signal for those who have — good candidate for an activation campaign.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TIER_ORDER = { Premium: 0, AddOn: 1, "Value-Added": 2, Core: 3 };
+
+const FEATURES = [
+  { name: "Marketplace – Offers core flow",            area: "Marketplace",       tier: "Premium",     events: 28780254, accounts: 1362, signal: "Strong",   ccPct: 11,  zd: 42,   zdNote: "How-to questions, cancelled referrals, folder access" },
+  { name: "Marketplace – View Offer Details",          area: "Marketplace",       tier: "Premium",     events: 17450,    accounts: 36,   signal: "Growing",  ccPct: 11,  zd: null, zdNote: "" },
+  { name: "Marketplace – Add Service/Shift Offer",     area: "Marketplace",       tier: "Premium",     events: 5753,     accounts: 44,   signal: "Growing",  ccPct: 11,  zd: null, zdNote: "" },
+  { name: "Visit Optimizer – Config & Optimize",       area: "Data Intelligence", tier: "Premium",     events: 47511,    accounts: 774,  signal: "Strong",   ccPct: 61,  zd: 46,   zdNote: "Spike in C4 (21 tickets) — wrong discipline, inaccurate travel time" },
+  { name: "Notable – Open Note",                       area: "Data Intelligence", tier: "Premium",     events: 121641,   accounts: 86,   signal: "Strong",   ccPct: 49,  zd: 13,   zdNote: "Mostly questions; 1 filter bug (Jun 9)" },
+  { name: "AI Smart Summaries (Layla)",                area: "Data Intelligence", tier: "Premium",     events: 7289,     accounts: 174,  signal: "Moderate", ccPct: 95,  zd: 0,    zdNote: "No complaints — working well for active cohort" },
+  { name: "AI Voice-to-Form (Dictate)",                area: "Data Intelligence", tier: "Premium",     events: 1634,     accounts: 42,   signal: "Early",    ccPct: 100, zd: 0,    zdNote: "No tickets — feature discovery issue likely" },
+  { name: "Data Exploration 2",                        area: "Data Intelligence", tier: "AddOn",       events: 0,        accounts: 0,    signal: "None",     ccPct: 21,  zd: 167,  zdNote: "Unavailability, slowness, incorrect calculations — blocked by quality" },
+  { name: "Employment Rulesets (Blended, OT)",         area: "Workforce Mgmt",    tier: "Core",        events: 246,      accounts: 95,   signal: "Early",    ccPct: null, zd: 0,   zdNote: "No tickets yet — 23 days live" },
+  { name: "Reconciliation – Bulk Payment",             area: "RCM",               tier: "Core",        events: 12391,    accounts: 30,   signal: "Growing",  ccPct: 19,  zd: null, zdNote: "" },
+  { name: "Client Demographics – New UX",              area: "Admission & Care",  tier: "Core",        events: 366532,   accounts: 666,  signal: "Strong",   ccPct: 32,  zd: null, zdNote: "" },
+  { name: "Field User Portal – Enhanced Dashboard",    area: "Admission & Care",  tier: "Core",        events: 9084,     accounts: 302,  signal: "Moderate", ccPct: 73,  zd: 0,    zdNote: "Silent regression — 82K reverse-clicks to legacy in Pendo (9:1 ratio)" },
+];
+
+function fmtEvents(n) {
+  if (n === 0) return "—";
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return Math.round(n / 1_000) + "K";
+  return n.toLocaleString();
+}
+
+function signalPill(s) {
+  const cls = (s === "Strong" || s === "Growing") ? "pill-success"
+            : s === "Moderate" ? "pill-neutral"
+            : s === "Early"    ? "pill-warning"
+            : "pill-danger";
+  return `<span class="pill ${cls}">${s}</span>`;
+}
+
+function tierPill(t) {
+  const cls = t === "Premium" ? "pill-info"
+            : t === "AddOn"   ? "pill-addon"
+            : t === "Value-Added" ? "pill-success"
+            : "pill-neutral";
+  return `<span class="pill ${cls}">${t}</span>`;
+}
+
+function ccCell(pct) {
+  if (pct === null) return `<span class="cc-pct none">—</span>`;
+  const cls = pct >= 60 ? "high" : pct <= 20 ? "low" : "";
+  return `<span class="cc-pct ${cls}">${pct}%</span>`;
+}
+
+const sorted = [...FEATURES].sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
+
+let html = "";
+let lastTier = null;
+for (const f of sorted) {
+  if (f.tier !== lastTier) {
+    html += `<tr class="section-header"><td colspan="9">${f.tier}</td></tr>`;
+    lastTier = f.tier;
+  }
+  const isDanger  = f.name.includes("Data Exploration");
+  const isWarning = f.zd !== null && f.zd > 20 && !isDanger;
+  const rowCls = isDanger ? "row-danger" : isWarning ? "row-warning" : "";
+  const zdCell = f.zd === null ? `<span style="color:var(--text-tertiary)">—</span>`
+               : `<span style="font-weight:${f.zd > 30 ? 600 : 400};color:${f.zd > 30 ? "var(--clr-orange)" : "inherit"}">${f.zd}</span>`;
+
+  html += `<tr class="${rowCls}">
+    <td style="font-weight:500">${f.name}</td>
+    <td class="cell-secondary">${f.area}</td>
+    <td>${tierPill(f.tier)}</td>
+    <td class="right" style="font-weight:${f.events>0?600:400}">${fmtEvents(f.events)}</td>
+    <td class="right">${f.accounts > 0 ? f.accounts.toLocaleString() : "—"}</td>
+    <td>${signalPill(f.signal)}</td>
+    <td class="right">${ccCell(f.ccPct)}</td>
+    <td class="right">${zdCell}</td>
+    <td class="cell-note">${f.zdNote || ""}</td>
+  </tr>`;
+}
+document.getElementById("feature-tbody").innerHTML = html;
+</script>
+</body>
+</html>
