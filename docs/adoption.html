@@ -200,17 +200,20 @@
     <div class="callout-title">Data coverage</div>
     Pendo events and account counts are sourced from <strong>product area activity</strong> in the AlayaCare web app
     (Marketplace, Data Intelligence, RCM, Admission &amp; Care Delivery, Workforce Management) —
-    not individual feature-level tags. MOB tickets (care worker app) live in separate Pendo apps
+    not individual feature-level tags. <strong>Exception:</strong> Data Exploration 2 uses
+    <strong>page-level views</strong> (Pendo page: "Data Exploration 2.0 | AlayaCare Cloud") which tracks
+    direct URL visits. MOB tickets (care worker app) live in separate Pendo apps
     (Caregiver iOS/Android) and were <strong>not queried</strong>.
     CC Activated = % of eligible tenants with the feature on in Control Center as of Jul 6, 2026.
   </div>
 
   <!-- Priority callouts -->
   <div class="callout callout-danger">
-    <div class="callout-title">Data Exploration 2 — blocked, not dormant</div>
-    167 Zendesk tickets about DE 2.0 unavailability, slowness, and incorrect calculations — yet Pendo shows zero events.
-    Only 21% of eligible tenants have even activated it (236 of 1,107). Customers are trying to reach it but can't reliably access it.
-    This needs an engineering triage, not a marketing campaign.
+    <div class="callout-title">Data Exploration 2 — quality issues in a heavily-used feature</div>
+    58,708 Pendo page views across 834 accounts and 6,596 unique visitors — DE 2.0 is one of the most-accessed
+    features in this report. Yet 167 Zendesk tickets report slowness, incorrect calculations, and unavailability.
+    This is not a dormant feature: customers are using it and hitting quality issues.
+    Only 21% of eligible tenants have it activated (236/1,107) — fixing quality should unlock significant further adoption.
   </div>
 
   <div class="callout callout-warning">
@@ -328,9 +331,9 @@
         89 eligible tenants haven't switched it on — significant untapped growth.
       </div>
       <div class="card-body">
-        <strong>Data Exploration 2</strong> — 21% activated AND 167 Zendesk tickets AND zero Pendo events.
-        Only 236 of 1,107 eligible tenants have it on, and even those can't use it reliably.
-        Quality fix must precede any activation push.
+        <strong>Data Exploration 2</strong> — 21% activated (236/1,107) yet 58K Pendo page views
+        across 834 accounts. The activated cohort is using it heavily, but 79% of eligible tenants
+        haven't turned it on. Fix quality first (167 ZD tickets), then push activation.
       </div>
       <div class="card-body">
         <strong>Notable</strong> — 49% activated (211/430). Half of eligible customers haven't enabled it.
@@ -352,7 +355,7 @@ const FEATURES = [
   { name: "Notable – Open Note",                       area: "Data Intelligence", tier: "Premium",     events: 121641,   accounts: 86,   signal: "Strong",   ccPct: 49,  zd: 13,   zdNote: "Mostly questions; 1 filter bug (Jun 9)" },
   { name: "AI Smart Summaries (Layla)",                area: "Data Intelligence", tier: "Premium",     events: 7289,     accounts: 174,  signal: "Moderate", ccPct: 95,  zd: 0,    zdNote: "No complaints — working well for active cohort" },
   { name: "AI Voice-to-Form (Dictate)",                area: "Data Intelligence", tier: "Premium",     events: 1634,     accounts: 42,   signal: "Early",    ccPct: 100, zd: 0,    zdNote: "No tickets — feature discovery issue likely" },
-  { name: "Data Exploration 2",                        area: "Data Intelligence", tier: "AddOn",       events: 0,        accounts: 0,    signal: "None",     ccPct: 21,  zd: 167,  zdNote: "Unavailability, slowness, incorrect calculations — blocked by quality" },
+  { name: "Data Exploration 2",                        area: "Data Intelligence", tier: "AddOn",       events: 58708,    accounts: 834,  signal: "Strong",   ccPct: 21,  zd: 167,  zdNote: "Slowness, incorrect calculations, unavailability — quality issues in a heavily-used feature" },
   { name: "Employment Rulesets (Blended, OT)",         area: "Workforce Mgmt",    tier: "Core",        events: 246,      accounts: 95,   signal: "Early",    ccPct: null, zd: 0,   zdNote: "No tickets yet — 23 days live" },
   { name: "Reconciliation – Bulk Payment",             area: "RCM",               tier: "Core",        events: 12391,    accounts: 30,   signal: "Growing",  ccPct: 19,  zd: null, zdNote: "" },
   { name: "Client Demographics – New UX",              area: "Admission & Care",  tier: "Core",        events: 366532,   accounts: 666,  signal: "Strong",   ccPct: 32,  zd: null, zdNote: "" },
