@@ -76,6 +76,22 @@
   /* ── Stats ───────────────────────────────────────────── */
   .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
   .stat-value { font-size: 22px; font-weight: 700; line-height: 1.1; }
+  .stat-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+  .stat-value.warn { color: var(--pill-warn-fg); }
+
+  .callout {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    border-left: 3px solid;
+  }
+  .callout-title { font-weight: 600; margin-bottom: 4px; }
+  .callout-note  { background: #141828; border-color: var(--accent-blue); color: var(--text-secondary); }
+  .callout-note  .callout-title { color: var(--text-link); }
+
+  th.right, td.right { text-align: right; }
+  .zd-high { color: var(--pill-warn-fg); font-weight: 600; }
 
   /* ── Pills ───────────────────────────────────────────── */
   .pill {
@@ -232,6 +248,29 @@
 
   <hr class="divider" />
 
+  <!-- Zendesk support -->
+  <div class="stack stack-12">
+    <div class="row row-gap-8">
+      <h3>Zendesk support tickets</h3>
+      <span class="note">feature-keyword search in release window · may double-count multi-feature tickets</span>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">How this is measured</div>
+      Related tickets = sum of Zendesk search hits for feature keywords shipped in each release (e.g. "visit optimizer", "marketplace", "data exploration").
+      Percentage = related ÷ all tickets created in the release window. Jira-key mentions in the table are a separate, stricter signal.
+    </div>
+    <div class="stack stack-6">
+      <h3>Light releases</h3>
+      <div class="grid-6" id="light-zd-stats"></div>
+    </div>
+    <div class="stack stack-6">
+      <h3>Regular releases</h3>
+      <div class="grid-6" id="regular-zd-stats"></div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
   <!-- Filters -->
   <div class="row row-gap-16">
     <strong style="font-size:13px">Filter:</strong>
@@ -272,6 +311,7 @@
             <th>Domain</th>
             <th>Market</th>
             <th>Status</th>
+            <th class="right">ZD</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -345,12 +385,14 @@ const TICKETS = [
 const FT_ORDER = { Premium: 0, AddOn: 1, "Value-Added": 2, Core: 3 };
 const LIGHT_RELEASES = new Set(["C1", "C3", "C5", "C6", "C7"]);
 const RELEASE_COUNTS = [
-  { label: "C2 (04/15)", count: 21, light: false },
-  { label: "C3 (04/29)", count: 4,  light: true  },
-  { label: "C4 (05/13)", count: 15, light: false },
-  { label: "C5 (06/03)", count: 5,  light: true  },
-  { label: "C6 (06/24)", count: 5,  light: true  },
+  { label: "C2 (04/15)", count: 21, light: false, zdRelated: 30,  zdTotal: 939,  zdPct: 3.2 },
+  { label: "C3 (04/29)", count: 4,  light: true,  zdRelated: 4,   zdTotal: 1012, zdPct: 0.4 },
+  { label: "C4 (05/13)", count: 15, light: false, zdRelated: 86,  zdTotal: 1362, zdPct: 6.3 },
+  { label: "C5 (06/03)", count: 5,  light: true,  zdRelated: 223, zdTotal: 1567, zdPct: 14.2 },
+  { label: "C6 (06/24)", count: 5,  light: true,  zdRelated: 91,  zdTotal: 1386, zdPct: 6.6 },
 ];
+const ZENDESK_BY_RELEASE = Object.fromEntries(RELEASE_COUNTS.map(r => [r.label, r]));
+const KEY_ZD = {"CARE-297":0,"CFG-8728":0,"CFG-8878":0,"CFG-8884":0,"EI-9984":0,"EI-10258":1,"LAB-6646":0,"LAB-6669":0,"LAB-7237":0,"LAB-7240":0,"PAYR-6861":0,"ADM-3150":0,"AM-4805":0,"AM-4942":0,"ADM-3104":0,"LAB-6671":0,"LAB-6673":0,"SCHED-5823":0,"AFL-855":0,"CFG-9311":0,"EI-10343":0,"BO-36802":0,"CFG-9252":0,"CFG-9328":0,"SEV-8482":0,"ADM-2869":2,"ADM-2940":0,"ADM-3246":0,"AM-4966":0,"AM-5042":0,"CARE-402":1,"CLIN-17807":0,"CLIN-18452":0,"EI-9934":0,"LAB-7467":0,"MOB-11144":0,"MOBD-4190":0,"SCHED-2030":0,"SCHED-5269":0,"SPX-9171":0,"AM-5026":0,"AM-5045":0,"PAYR-7203":1,"SPX-8818":0,"SPX-9297":0,"LAB-7674":0,"SPX-6663":0,"SPX-6828":1,"SPX-9266":0,"SPX-9318":0};
 const FEATURE_TYPES = ["Premium", "AddOn", "Value-Added", "Core"];
 
 function releaseCode(release) {
@@ -390,6 +432,20 @@ function esc(s) {
 function statCard(label, value) {
   return `<div class="card"><div class="stat-label">${esc(label)}</div><div class="stat-value">${esc(String(value))}</div></div>`;
 }
+function zdStatCard(label, related, total, pct) {
+  const warn = pct >= 10 ? " warn" : "";
+  return `<div class="card">
+    <div class="stat-label">${esc(label)}</div>
+    <div class="stat-value${warn}">${related}</div>
+    <div class="stat-sub">${pct}% of ${total.toLocaleString()} tickets</div>
+  </div>`;
+}
+function zdGroupTotal(rows) {
+  const related = rows.reduce((s, r) => s + r.zdRelated, 0);
+  const total = rows.reduce((s, r) => s + r.zdTotal, 0);
+  const pct = total ? Math.round(related / total * 1000) / 10 : 0;
+  return zdStatCard("Total", related, total, pct);
+}
 
 document.getElementById("light-release-stats").innerHTML =
   statCard("Total", TICKETS.filter(t => isLightRelease(t.release)).length) +
@@ -398,6 +454,13 @@ document.getElementById("light-release-stats").innerHTML =
 document.getElementById("regular-release-stats").innerHTML =
   statCard("Total", TICKETS.filter(t => !isLightRelease(t.release)).length) +
   RELEASE_COUNTS.filter(r => !r.light).map(r => statCard(r.label, r.count)).join("");
+
+const lightZd = RELEASE_COUNTS.filter(r => r.light);
+const regularZd = RELEASE_COUNTS.filter(r => !r.light);
+document.getElementById("light-zd-stats").innerHTML =
+  zdGroupTotal(lightZd) + lightZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct)).join("");
+document.getElementById("regular-zd-stats").innerHTML =
+  zdGroupTotal(regularZd) + regularZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct)).join("");
 
 const ftCounts = { Premium: 0, AddOn: 0, "Value-Added": 0, Core: 0 };
 for (const t of TICKETS) ftCounts[t.ft]++;
@@ -443,8 +506,14 @@ function render() {
   const tbody = document.getElementById("table-body");
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No tickets match the selected filters.</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="9">No tickets match the selected filters.</td></tr>`;
     return;
+  }
+
+  function zdCell(key) {
+    const n = KEY_ZD[key] || 0;
+    if (!n) return `<td class="right cell-secondary">—</td>`;
+    return `<td class="right">${n}</td>`;
   }
 
   function ticketRow(t) {
@@ -457,12 +526,13 @@ function render() {
       <td class="cell-secondary">${esc(t.domain || "—")}</td>
       <td class="cell-secondary">${esc(t.market || "—")}</td>
       <td>${pill(t.status, statusPillClass(t.status))}</td>
+      ${zdCell(t.key)}
     </tr>`;
   }
 
   function renderReleaseGroup(title, groupClass, tickets) {
     if (tickets.length === 0) return "";
-    let html = `<tr class="section-header ${groupClass}"><td colspan="8">${esc(title)} (${tickets.length})</td></tr>`;
+    let html = `<tr class="section-header ${groupClass}"><td colspan="9">${esc(title)} (${tickets.length})</td></tr>`;
     const byRelease = {};
     for (const t of tickets) (byRelease[t.release] = byRelease[t.release] || []).push(t);
     for (const rel of Object.keys(byRelease).sort((a, b) => releaseSortKey(a) - releaseSortKey(b))) {
@@ -471,7 +541,11 @@ function render() {
         return ftDiff !== 0 ? ftDiff : a.key.localeCompare(b.key);
       });
       const subClass = isLightRelease(rel) ? "light" : "";
-      html += `<tr class="section-subheader ${subClass}"><td colspan="8">${esc(rel)} (${relTickets.length})</td></tr>`;
+      const zd = ZENDESK_BY_RELEASE[rel];
+      const zdLabel = zd
+        ? ` · ${zd.zdRelated} ZD (${zd.zdPct}% of ${zd.zdTotal.toLocaleString()})`
+        : "";
+      html += `<tr class="section-subheader ${subClass}"><td colspan="9">${esc(rel)} (${relTickets.length} release notes${zdLabel})</td></tr>`;
       html += relTickets.map(ticketRow).join("");
     }
     return html;
