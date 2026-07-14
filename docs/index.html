@@ -160,7 +160,7 @@
 
   /* ── Feature type section header rows ───────────────── */
   tr.section-header td {
-    padding: 6px 12px 4px;
+    padding: 8px 12px 6px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -169,6 +169,17 @@
     background: var(--bg);
     border-bottom: 1px solid var(--border);
   }
+  tr.section-header.light-group td { color: #8aa8d8; }
+  tr.section-header.regular-group td { color: #9aa0b8; }
+  tr.section-subheader td {
+    padding: 5px 12px 5px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  tr.section-subheader.light td { color: #8aa8d8; }
 
   /* ── Note ────────────────────────────────────────────── */
   .note {
@@ -192,11 +203,23 @@
       <div style="margin-top:8px">
     <a href="adoption.html" style="color:#6b9eff;font-size:13px;text-decoration:none;">→ Feature Adoption Report (Pendo · Zendesk · CC Activation)</a>
   </div>
-  <p class="subtitle">Tickets with "Add to Release Notes = Yes – Continuous" · Releases C2–C6 (Mar 25 – Jun 24, 2026) · C1 had no qualifying tickets</p>
+  <p class="subtitle">Tickets with "Add to Release Notes = Yes – Continuous" · Grouped by light vs regular release · C1 had no qualifying tickets</p>
   </div>
 
-  <!-- Stats row 1: by release -->
-  <div class="grid-6" id="release-stats"></div>
+  <!-- Stats: by release type -->
+  <div class="stack stack-12">
+    <div class="stack stack-6">
+      <div class="row row-gap-8">
+        <h3>Light releases</h3>
+        <span class="note">C1, C3, C5, C6, C7 — no external customer comms</span>
+      </div>
+      <div class="grid-6" id="light-release-stats"></div>
+    </div>
+    <div class="stack stack-6">
+      <h3>Regular releases</h3>
+      <div class="grid-6" id="regular-release-stats"></div>
+    </div>
+  </div>
 
   <!-- Stats row 2: by feature type -->
   <div class="stack stack-6">
@@ -320,14 +343,26 @@ const TICKETS = [
 ];
 
 const FT_ORDER = { Premium: 0, AddOn: 1, "Value-Added": 2, Core: 3 };
+const LIGHT_RELEASES = new Set(["C1", "C3", "C5", "C6", "C7"]);
 const RELEASE_COUNTS = [
-  { label: "C2 (04/15)", count: 21 },
-  { label: "C3 (04/29)", count: 4 },
-  { label: "C4 (05/13)", count: 15 },
-  { label: "C5 (06/03)", count: 5 },
-  { label: "C6 (06/24)", count: 5 },
+  { label: "C2 (04/15)", count: 21, light: false },
+  { label: "C3 (04/29)", count: 4,  light: true  },
+  { label: "C4 (05/13)", count: 15, light: false },
+  { label: "C5 (06/03)", count: 5,  light: true  },
+  { label: "C6 (06/24)", count: 5,  light: true  },
 ];
 const FEATURE_TYPES = ["Premium", "AddOn", "Value-Added", "Core"];
+
+function releaseCode(release) {
+  const m = release.match(/^(C\d+)/);
+  return m ? m[1] : release;
+}
+function isLightRelease(release) {
+  return LIGHT_RELEASES.has(releaseCode(release));
+}
+function releaseSortKey(release) {
+  return parseInt(release.match(/C(\d+)/)?.[1] || "0", 10);
+}
 
 // ── Pill helpers ──────────────────────────────────────────────────────────────
 function ftPillClass(ft) {
@@ -356,9 +391,13 @@ function statCard(label, value) {
   return `<div class="card"><div class="stat-label">${esc(label)}</div><div class="stat-value">${esc(String(value))}</div></div>`;
 }
 
-document.getElementById("release-stats").innerHTML =
-  statCard("Total tickets", TICKETS.length) +
-  RELEASE_COUNTS.map(r => statCard(r.label, r.count)).join("");
+document.getElementById("light-release-stats").innerHTML =
+  statCard("Total", TICKETS.filter(t => isLightRelease(t.release)).length) +
+  RELEASE_COUNTS.filter(r => r.light).map(r => statCard(r.label, r.count)).join("");
+
+document.getElementById("regular-release-stats").innerHTML =
+  statCard("Total", TICKETS.filter(t => !isLightRelease(t.release)).length) +
+  RELEASE_COUNTS.filter(r => !r.light).map(r => statCard(r.label, r.count)).join("");
 
 const ftCounts = { Premium: 0, AddOn: 0, "Value-Added": 0, Core: 0 };
 for (const t of TICKETS) ftCounts[t.ft]++;
@@ -389,8 +428,12 @@ function render() {
   );
 
   const sorted = [...filtered].sort((a, b) => {
-    const d = FT_ORDER[a.ft] - FT_ORDER[b.ft];
-    return d !== 0 ? d : a.key.localeCompare(b.key);
+    const lightDiff = Number(isLightRelease(a.release)) - Number(isLightRelease(b.release));
+    if (lightDiff !== 0) return lightDiff;
+    const relDiff = releaseSortKey(a.release) - releaseSortKey(b.release);
+    if (relDiff !== 0) return relDiff;
+    const ftDiff = FT_ORDER[a.ft] - FT_ORDER[b.ft];
+    return ftDiff !== 0 ? ftDiff : a.key.localeCompare(b.key);
   });
 
   const done = filtered.filter(t => ["Done","Closed","On Prod"].includes(t.status)).length;
@@ -404,15 +447,8 @@ function render() {
     return;
   }
 
-  let html = "";
-  let lastFt = null;
-
-  for (const t of sorted) {
-    if (t.ft !== lastFt) {
-      html += `<tr class="section-header"><td colspan="8">${esc(t.ft)}</td></tr>`;
-      lastFt = t.ft;
-    }
-    html += `<tr>
+  function ticketRow(t) {
+    return `<tr>
       <td><a class="key-link" href="${JIRA}${esc(t.key)}" target="_blank" rel="noreferrer">${esc(t.key)}</a></td>
       <td class="cell-secondary">${esc(t.release)}</td>
       <td>${pill(t.type, typePillClass(t.type))}</td>
@@ -424,7 +460,29 @@ function render() {
     </tr>`;
   }
 
-  tbody.innerHTML = html;
+  function renderReleaseGroup(title, groupClass, tickets) {
+    if (tickets.length === 0) return "";
+    let html = `<tr class="section-header ${groupClass}"><td colspan="8">${esc(title)} (${tickets.length})</td></tr>`;
+    const byRelease = {};
+    for (const t of tickets) (byRelease[t.release] = byRelease[t.release] || []).push(t);
+    for (const rel of Object.keys(byRelease).sort((a, b) => releaseSortKey(a) - releaseSortKey(b))) {
+      const relTickets = byRelease[rel].sort((a, b) => {
+        const ftDiff = FT_ORDER[a.ft] - FT_ORDER[b.ft];
+        return ftDiff !== 0 ? ftDiff : a.key.localeCompare(b.key);
+      });
+      const subClass = isLightRelease(rel) ? "light" : "";
+      html += `<tr class="section-subheader ${subClass}"><td colspan="8">${esc(rel)} (${relTickets.length})</td></tr>`;
+      html += relTickets.map(ticketRow).join("");
+    }
+    return html;
+  }
+
+  const lightTickets = sorted.filter(t => isLightRelease(t.release));
+  const regularTickets = sorted.filter(t => !isLightRelease(t.release));
+
+  tbody.innerHTML =
+    renderReleaseGroup("Light continuous releases", "light-group", lightTickets) +
+    renderReleaseGroup("Regular continuous releases", "regular-group", regularTickets);
 }
 
 selRelease.addEventListener("change", render);
