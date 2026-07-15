@@ -78,6 +78,30 @@
   .stat-value { font-size: 22px; font-weight: 700; line-height: 1.1; }
   .stat-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
   .stat-value.warn { color: var(--pill-warn-fg); }
+  .zd-features {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+  .zd-features li {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 1px 0;
+  }
+  .zd-features li span:last-child {
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .zd-features li.hot span:last-child { color: var(--pill-warn-fg); }
+  .zd-features-empty { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; font-style: italic; }
+
+  .grid-zd { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 
   .callout {
     border-radius: 8px;
@@ -207,6 +231,7 @@
   @media (max-width: 700px) {
     .grid-6 { grid-template-columns: repeat(3, 1fr); }
     .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-zd { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -261,11 +286,11 @@
     </div>
     <div class="stack stack-6">
       <h3>Light releases</h3>
-      <div class="grid-6" id="light-zd-stats"></div>
+      <div class="grid-zd" id="light-zd-stats"></div>
     </div>
     <div class="stack stack-6">
       <h3>Regular releases</h3>
-      <div class="grid-6" id="regular-zd-stats"></div>
+      <div class="grid-zd" id="regular-zd-stats"></div>
     </div>
   </div>
 
@@ -385,11 +410,46 @@ const TICKETS = [
 const FT_ORDER = { Premium: 0, AddOn: 1, "Value-Added": 2, Core: 3 };
 const LIGHT_RELEASES = new Set(["C1", "C3", "C5", "C6", "C7"]);
 const RELEASE_COUNTS = [
-  { label: "C2 (04/15)", count: 21, light: false, zdRelated: 30,  zdTotal: 939,  zdPct: 3.2 },
-  { label: "C3 (04/29)", count: 4,  light: true,  zdRelated: 4,   zdTotal: 1012, zdPct: 0.4 },
-  { label: "C4 (05/13)", count: 15, light: false, zdRelated: 86,  zdTotal: 1362, zdPct: 6.3 },
-  { label: "C5 (06/03)", count: 5,  light: true,  zdRelated: 223, zdTotal: 1567, zdPct: 14.2 },
-  { label: "C6 (06/24)", count: 5,  light: true,  zdRelated: 91,  zdTotal: 1386, zdPct: 6.6 },
+  { label: "C2 (04/15)", count: 21, light: false, zdRelated: 30,  zdTotal: 939,  zdPct: 3.2,
+    zdFeatures: [
+      { name: "Tasks V2", count: 16 },
+      { name: "Marketplace", count: 10 },
+      { name: "Visit Optimizer", count: 1 },
+      { name: "Notable", count: 1 },
+      { name: "AI Form Assistant", count: 1 },
+      { name: "HERE Maps", count: 1 },
+    ]},
+  { label: "C3 (04/29)", count: 4,  light: true,  zdRelated: 4,   zdTotal: 1012, zdPct: 0.4,
+    zdFeatures: [
+      { name: "Calculated premiums", count: 4 },
+    ]},
+  { label: "C4 (05/13)", count: 15, light: false, zdRelated: 86,  zdTotal: 1362, zdPct: 6.3,
+    zdFeatures: [
+      { name: "Field User Portal", count: 25 },
+      { name: "Unavailability", count: 22 },
+      { name: "Visit Optimizer", count: 21 },
+      { name: "Client Overview", count: 7 },
+      { name: "Form draft linkage", count: 7 },
+      { name: "Intake Wizard", count: 3 },
+      { name: "Visit Completion Report", count: 1 },
+    ]},
+  { label: "C5 (06/03)", count: 5,  light: true,  zdRelated: 223, zdTotal: 1567, zdPct: 14.2,
+    zdFeatures: [
+      { name: "Data Exploration", count: 148 },
+      { name: "Group association", count: 38 },
+      { name: "Progress notes", count: 27 },
+      { name: "Marketplace", count: 6 },
+      { name: "Employee Explore", count: 4 },
+    ]},
+  { label: "C6 (06/24)", count: 5,  light: true,  zdRelated: 91,  zdTotal: 1386, zdPct: 6.6,
+    zdFeatures: [
+      { name: "Snowflake / DE pipeline", count: 49 },
+      { name: "Payor program fields", count: 15 },
+      { name: "Missed visits (Visit Optimizer)", count: 8 },
+      { name: "Data sharing", count: 7 },
+      { name: "Data Exploration 2", count: 7 },
+      { name: "Visit Optimizer", count: 5 },
+    ]},
 ];
 const ZENDESK_BY_RELEASE = Object.fromEntries(RELEASE_COUNTS.map(r => [r.label, r]));
 const KEY_ZD = {"CARE-297":0,"CFG-8728":0,"CFG-8878":0,"CFG-8884":0,"EI-9984":0,"EI-10258":1,"LAB-6646":0,"LAB-6669":0,"LAB-7237":0,"LAB-7240":0,"PAYR-6861":0,"ADM-3150":0,"AM-4805":0,"AM-4942":0,"ADM-3104":0,"LAB-6671":0,"LAB-6673":0,"SCHED-5823":0,"AFL-855":0,"CFG-9311":0,"EI-10343":0,"BO-36802":0,"CFG-9252":0,"CFG-9328":0,"SEV-8482":0,"ADM-2869":2,"ADM-2940":0,"ADM-3246":0,"AM-4966":0,"AM-5042":0,"CARE-402":1,"CLIN-17807":0,"CLIN-18452":0,"EI-9934":0,"LAB-7467":0,"MOB-11144":0,"MOBD-4190":0,"SCHED-2030":0,"SCHED-5269":0,"SPX-9171":0,"AM-5026":0,"AM-5045":0,"PAYR-7203":1,"SPX-8818":0,"SPX-9297":0,"LAB-7674":0,"SPX-6663":0,"SPX-6828":1,"SPX-9266":0,"SPX-9318":0};
@@ -432,19 +492,39 @@ function esc(s) {
 function statCard(label, value) {
   return `<div class="card"><div class="stat-label">${esc(label)}</div><div class="stat-value">${esc(String(value))}</div></div>`;
 }
-function zdStatCard(label, related, total, pct) {
+function zdFeatureList(features) {
+  if (!features.length) return `<div class="zd-features-empty">No feature-keyword hits</div>`;
+  const items = features.map(f => {
+    const hot = f.count >= 15 ? " hot" : "";
+    return `<li class="${hot}"><span>${esc(f.name)}</span><span>${f.count}</span></li>`;
+  }).join("");
+  return `<ul class="zd-features">${items}</ul>`;
+}
+function zdStatCard(label, related, total, pct, features = []) {
   const warn = pct >= 10 ? " warn" : "";
   return `<div class="card">
     <div class="stat-label">${esc(label)}</div>
     <div class="stat-value${warn}">${related}</div>
     <div class="stat-sub">${pct}% of ${total.toLocaleString()} tickets</div>
+    ${zdFeatureList(features)}
   </div>`;
+}
+function mergeZdFeatures(rows) {
+  const map = {};
+  for (const row of rows) {
+    for (const f of row.zdFeatures || []) {
+      map[f.name] = (map[f.name] || 0) + f.count;
+    }
+  }
+  return Object.entries(map)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 }
 function zdGroupTotal(rows) {
   const related = rows.reduce((s, r) => s + r.zdRelated, 0);
   const total = rows.reduce((s, r) => s + r.zdTotal, 0);
   const pct = total ? Math.round(related / total * 1000) / 10 : 0;
-  return zdStatCard("Total", related, total, pct);
+  return zdStatCard("Total", related, total, pct, mergeZdFeatures(rows));
 }
 
 document.getElementById("light-release-stats").innerHTML =
@@ -458,9 +538,9 @@ document.getElementById("regular-release-stats").innerHTML =
 const lightZd = RELEASE_COUNTS.filter(r => r.light);
 const regularZd = RELEASE_COUNTS.filter(r => !r.light);
 document.getElementById("light-zd-stats").innerHTML =
-  zdGroupTotal(lightZd) + lightZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct)).join("");
+  zdGroupTotal(lightZd) + lightZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct, r.zdFeatures)).join("");
 document.getElementById("regular-zd-stats").innerHTML =
-  zdGroupTotal(regularZd) + regularZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct)).join("");
+  zdGroupTotal(regularZd) + regularZd.map(r => zdStatCard(r.label, r.zdRelated, r.zdTotal, r.zdPct, r.zdFeatures)).join("");
 
 const ftCounts = { Premium: 0, AddOn: 0, "Value-Added": 0, Core: 0 };
 for (const t of TICKETS) ftCounts[t.ft]++;
